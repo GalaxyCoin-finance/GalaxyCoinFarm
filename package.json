@@ -1,0 +1,30 @@
+{
+  "name": "payrlink-core",
+  "version": "1.0.0",
+  "description": "PayrLink Core Smart Contracts",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "kovan": "truffle migrate --network kovan --reset",
+    "verifykovan": "truffle run verify PAYR Crowdsale Presale Farm --network kovan",
+    "mainnet": "truffle migrate --network main --reset",
+    "verify": "truffle run verify PAYR --network main",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "https://github.com/payrlinks/payrlinks-contracts",
+  "author": "admin@payrlink.com",
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.0.0",
+    "@truffle/hdwallet-provider": "^1.2.1",
+    "dotenv": "^5.0.1",
+    "fs": "0.0.1-security",
+    "ganache-cli": "^6.1.2",
+    "truffle": "^5.1.62"
+  },
+  "devDependencies": {
+    "truffle-plugin-verify": "^0.5.4"
+  }
+}
