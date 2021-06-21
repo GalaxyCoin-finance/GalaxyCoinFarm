@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-
+mnemonic = process.env.MNEMONIC;
 module.exports = {
   networks: {
     development: {
@@ -38,6 +38,22 @@ module.exports = {
       gasPrice: 20000000000,
       confirmations: 2,
       websockets: true
+    },
+    bsctestnet: {
+      provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+      network_id: 97,
+      confirmations: 10,
+      timeoutBlocks: 2000,
+      networkCheckTimeout: 1000000000 ,
+      skipDryRun: true
+    },
+    bsc: {
+      provider: () => new HDWalletProvider(mnemonic, `https://bsc-dataseed1.binance.org`),
+      network_id: 56,
+      confirmations: 20,
+      timeoutBlocks: 2000,
+      networkCheckTimeout: 1000000000 ,
+      skipDryRun: true
     }
   },
   compilers: {
