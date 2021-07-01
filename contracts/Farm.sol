@@ -44,6 +44,9 @@ contract Farm is Ownable {
         uint256 allocPoint;         // How many allocation points assigned to this pool. ERC20s to distribute per block.
         uint256 lastRewardBlock;    // Last block number that ERC20s distribution occurs.
         uint256 accERC20PerShare;   // Accumulated ERC20s per share, times 1e36.
+        uint256 withdrawFee;        // Fee of amount which will go to admin's wallet when people unstake
+        uint256 claimFee;           // Fee of amount which will go to admin's wallet when people claim
+
     }
 
     // Address of the ERC20 Token contract.
@@ -65,15 +68,19 @@ contract Farm is Ownable {
     // The block number when farming ends.
     uint256 public endBlock;
 
+    //admin wallet's address
+    address private adminWallet;
+
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
-    constructor(IERC20 _erc20, uint256 _rewardPerBlock, uint256 _startBlock) {
+    constructor(IERC20 _erc20, uint256 _rewardPerBlock, uint256 _startBlock, address _adminWalletAddr) {
         erc20 = _erc20;
         rewardPerBlock = _rewardPerBlock;
         startBlock = _startBlock;
         endBlock = _startBlock;
+        adminWallet = _adminWalletAddr;
     }
 
     // Number of LP pools
@@ -91,7 +98,7 @@ contract Farm is Ownable {
 
     // Add a new lp to the pool. Can only be called by the owner.
     // DO NOT add the same LP token more than once. Rewards will be messed up if you do.
-    function add(uint256 _allocPoint, IERC20 _lpToken, bool _withUpdate) external onlyOwner {
+    function add(uint256 _allocPoint, IERC20 _lpToken, uint256 _withdrawFee, uint256 _claimFee, bool _withUpdate ) external onlyOwner {
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -101,7 +108,9 @@ contract Farm is Ownable {
             lpToken: _lpToken,
             allocPoint: _allocPoint,
             lastRewardBlock: lastRewardBlock,
-            accERC20PerShare: 0
+            accERC20PerShare: 0,
+            withdrawFee: _withdrawFee, 
+            claimFee: _claimFee
         }));
     }
 
@@ -183,7 +192,10 @@ contract Farm is Ownable {
         updatePool(_pid);
         if (user.amount > 0) {
             uint256 pendingAmount = user.amount.mul(pool.accERC20PerShare).div(1e36).sub(user.rewardDebt);
-            erc20Transfer(msg.sender, pendingAmount);
+            uint256 adminWalletAmount = pendingAmount * pool.claimFee / 1000;
+            if(adminWalletAmount > 0)
+                erc20Transfer(adminWallet, adminWalletAmount);
+            erc20Transfer(msg.sender, pendingAmount-adminWalletAmount);
         }
         pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
         user.amount = user.amount.add(_amount);
@@ -201,7 +213,10 @@ contract Farm is Ownable {
         erc20Transfer(msg.sender, pendingAmount);
         user.amount = user.amount.sub(_amount);
         user.rewardDebt = user.amount.mul(pool.accERC20PerShare).div(1e36);
-        pool.lpToken.safeTransfer(address(msg.sender), _amount);
+        uint256 adminWalletAmount = _amount * pool.withdrawFee / 1000;
+        if(adminWalletAmount > 0)
+            pool.lpToken.safeTransfer(adminWallet, adminWalletAmount);
+        pool.lpToken.safeTransfer(address(msg.sender), _amount - adminWalletAmount);
         emit Withdraw(msg.sender, _pid, _amount);
     }
 
@@ -228,10 +243,10 @@ contract Farm is Ownable {
         _erc20.transfer(_to, amount);
     }
 
-    function ethWithdraw(address payable _to) onlyOwner external {
-        uint256 balance = address(this).balance;
-        require(block.timestamp >= endBlock, "Farming is not ended yet.");
-		require(balance > 0, "Balance is zero.");
-        _to.transfer(balance);
+    //Change the rewardPerBlock
+    function changeRewardPerBlock(uint256 _rewardPerBlock) external onlyOwner {
+       rewardPerBlock = _rewardPerBlock;
     }
+
+
 }
