@@ -8,12 +8,19 @@
         "fund": "4000000000000000000000",
         "lp": [
             {
-                "address": "",
-                "allocPoint": 100
-            }
+                "address": "0x94137B11573c9f7985880f88A637138feeCf2Dbb",
+                "allocPoint": 100,
+                "withdrawFee":2,
+                "claimFee": 50
+            },
+            {
+                "address": "0x98d14ae8d18d2Ad560EBEeF9a0bB45817eab573d",
+                "allocPoint": 100,
+                "withdrawFee":0,
+                "claimFee": 50
+            }   
         ]
     },
-    "GalaxyCoin":"0x5b2A8334a6D5FC4c5BA444eFb90e9138b6297254",
-    "Farm": "0x0",
+    "GalaxyCoin":"0x98d14ae8d18d2Ad560EBEeF9a0bB45817eab573d",
     "Presale": "0x0"
 }

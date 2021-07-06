@@ -31,6 +31,8 @@ module.exports = async function(deployer) {
             await farmInstance.add(
               token.allocPoint,
               token.address,
+              token.withdrawFee,
+              token.calimFee,
               false
             );
           }
