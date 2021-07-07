@@ -1,7 +1,7 @@
 var fs = require('fs');
 
 var Farm = artifacts.require("../contracts/Farm.sol");
-var GalaxyCoin = artifacts.require("../contracts/GalaxyCoin.sol");
+var GalaxyCoin = artifacts.require("../contracts/GalaxyProxy.sol");
 
 const configs = require("../config.json");
 const contracts = require("../contracts.json");
@@ -25,10 +25,10 @@ module.exports = async function(deployer) {
         const farmInstance = await Farm.deployed();
         dataParse['Farm'] = Farm.address;
         if (configs.farm_param.fund) {
-         // const galaxyCoinInstance = await GalaxyCoin.at(dataParse['GalaxyCoin']);
-          const galaxyCoinContract = new web3.eth.Contract(GalaxyABI,dataParse['GalaxyCoin']);
+          const galaxyCoinInstance = await GalaxyCoin.at(dataParse['GalaxyCoin']);
+         // const galaxyCoinContract = new web3.eth.Contract(GalaxyABI,dataParse['GalaxyCoin']);
          // const galaxyCoinInstance = await galaxyCoinContract.at(dataParse['GalaxyCoin']);
-          await galaxyCoinContract.methods.approve(Farm.address, web3.utils.toBN(configs.farm_param.fund)).call();
+          await galaxyCoinInstance.approve(Farm.address, web3.utils.toBN(configs.farm_param.fund));
           await farmInstance.fund(web3.utils.toBN(configs.farm_param.fund));
         }
         for (let i = 0; i < configs.farm_param.lp.length; i ++) {
