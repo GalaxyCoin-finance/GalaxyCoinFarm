@@ -19,7 +19,7 @@ module.exports = async function(deployer) {
         const startBlock = configs.farm_param.startBlock
             || web3.utils.toBN(currentBlock).add(web3.utils.toBN(configs.farm_param.delay));
 
-        await deployer.deploy(Farm, dataParse['GalaxyCoin'], web3.utils.toBN(configs.farm_param.rewardPerBlock), startBlock, {
+        await deployer.deploy(Farm, dataParse['GalaxyCoin'], web3.utils.toBN(configs.farm_param.rewardPerBlock), startBlock, configs.farm_param.adminWalletAddr, {
           gas: 5000000
         });
         const farmInstance = await Farm.deployed();

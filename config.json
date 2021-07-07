@@ -6,6 +6,7 @@
         "rewardPerBlock": "8200000000000000000",
         "delay": 30,
         "fund": "4000000000000000000000",
+        "adminWalletAddr": "0x6Ad4E4C3693349A3Aca5Ec22665788042B77B2e0",
         "lp": [
             {
                 "address": "0x94137B11573c9f7985880f88A637138feeCf2Dbb",
