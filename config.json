@@ -1,7 +1,7 @@
 {
     "owner": "0xfc4aa4A414C034E8c852A9E2fA967f82F7D52B90",
     "mint": "20000000000000000000000000",
-    "lpExist": false,
+    "lpExist": true,
     "farm_param": {
         "rewardPerBlock": "8200000000000000000",
         "delay": 30,

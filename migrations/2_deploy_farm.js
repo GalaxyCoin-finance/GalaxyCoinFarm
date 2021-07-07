@@ -9,7 +9,7 @@ const GalaxyABI = require("../abi/GalaxyCoin.json")
 
 module.exports = async function(deployer) {
   try {
-    console.log("sdf");
+    
     let dataParse = contracts;
 
     if (configs.lpExist) {
