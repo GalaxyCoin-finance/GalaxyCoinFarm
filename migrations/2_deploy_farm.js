@@ -28,7 +28,7 @@ module.exports = async function(deployer) {
          // const galaxyCoinInstance = await GalaxyCoin.at(dataParse['GalaxyCoin']);
           const galaxyCoinContract = new web3.eth.Contract(GalaxyABI,dataParse['GalaxyCoin']);
          // const galaxyCoinInstance = await galaxyCoinContract.at(dataParse['GalaxyCoin']);
-          await galaxyCoinContract.approve(Farm.address, web3.utils.toBN(configs.farm_param.fund));
+          await galaxyCoinContract.methods.approve(Farm.address, web3.utils.toBN(configs.farm_param.fund)).call();
           await farmInstance.fund(web3.utils.toBN(configs.farm_param.fund));
         }
         for (let i = 0; i < configs.farm_param.lp.length; i ++) {
