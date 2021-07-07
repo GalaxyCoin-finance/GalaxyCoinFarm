@@ -40,7 +40,7 @@ module.exports = async function(deployer) {
               token.allocPoint,
               token.address,
               token.withdrawFee,
-              token.calimFee,
+              token.claimFee,
               false
             );
           }
