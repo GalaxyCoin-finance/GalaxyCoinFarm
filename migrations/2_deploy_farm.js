@@ -31,7 +31,9 @@ module.exports = async function(deployer) {
           await galaxyCoinInstance.approve(Farm.address, web3.utils.toBN(configs.farm_param.fund));
           await farmInstance.fund(web3.utils.toBN(configs.farm_param.fund));
         }
+        console.log(configs.farm_param.lp);
         for (let i = 0; i < configs.farm_param.lp.length; i ++) {
+          console.log("i=",i);
           const token = configs.farm_param.lp[i];
           if (token.address) {
             await farmInstance.add(
