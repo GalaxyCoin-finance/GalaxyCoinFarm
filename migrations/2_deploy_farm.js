@@ -13,6 +13,7 @@ module.exports = async function(deployer) {
 
     if (configs.lpExist) {
       if (!configs.Farm) {
+        console.log("sdf");
         const currentBlock = await web3.eth.getBlockNumber();
         const startBlock = configs.farm_param.startBlock
             || web3.utils.toBN(currentBlock).add(web3.utils.toBN(configs.farm_param.delay));
@@ -24,7 +25,7 @@ module.exports = async function(deployer) {
         dataParse['Farm'] = Farm.address;
         if (configs.farm_param.fund) {
          // const galaxyCoinInstance = await GalaxyCoin.at(dataParse['GalaxyCoin']);
-          const galaxyCoinInstance = new web3.eth.Contract(GalaxyABI, dataParse['GalaxyCoin'])
+          const galaxyCoinInstance = new web3.eth.Contract(GalaxyABI, dataParse['GalaxyCoin']);
           await galaxyCoinInstance.approve(Farm.address, web3.utils.toBN(configs.farm_param.fund));
           await farmInstance.fund(web3.utils.toBN(configs.farm_param.fund));
         }
