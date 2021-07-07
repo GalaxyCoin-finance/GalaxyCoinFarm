@@ -5,10 +5,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 contract GalaxyProxy is TransparentUpgradeableProxy {
-    constructor(address _logic, address _admin) 
-    TransparentUpgradeableProxy(_logic, _admin, "") {}
-
-    function getCurrentImplementation() public view returns(address) {
-        return _implementation();
-    }
+    /**
+     * Takes logic contract implementation address and admin address
+     */
+    constructor(address _logic, address _admin) TransparentUpgradeableProxy(_logic, _admin, "") {}
 }

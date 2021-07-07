@@ -1,7 +1,7 @@
 var fs = require('fs');
 
 var Farm = artifacts.require("../contracts/Farm.sol");
-var GalaxyCoin = artifacts.require("../contracts/GalaxyProxy.sol");
+var GalaxyCoin = artifacts.require("../contracts/GalaxyCoin.sol");
 
 const configs = require("../config.json");
 const contracts = require("../contracts.json");
