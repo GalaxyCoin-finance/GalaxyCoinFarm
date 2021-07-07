@@ -2,8 +2,10 @@ var fs = require('fs');
 
 var Farm = artifacts.require("../contracts/Farm.sol");
 var GalaxyCoin = artifacts.require("../contracts/GalaxyCoin.sol");
+
 const configs = require("../config.json");
 const contracts = require("../contracts.json");
+const GalaxyABI = require("../abi/GalaxyCoin.json")
 
 module.exports = async function(deployer) {
   try {
@@ -21,7 +23,8 @@ module.exports = async function(deployer) {
         const farmInstance = await Farm.deployed();
         dataParse['Farm'] = Farm.address;
         if (configs.farm_param.fund) {
-          const galaxyCoinInstance = await GalaxyCoin.at(dataParse['GalaxyCoin']);
+         // const galaxyCoinInstance = await GalaxyCoin.at(dataParse['GalaxyCoin']);
+          const galaxyCoinInstance = new web3.eth.Contract(GalaxyABI, dataParse['GalaxyCoin'])
           await galaxyCoinInstance.approve(Farm.address, web3.utils.toBN(configs.farm_param.fund));
           await farmInstance.fund(web3.utils.toBN(configs.farm_param.fund));
         }
