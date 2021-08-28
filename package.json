@@ -21,7 +21,7 @@
     "@openzeppelin/contracts-upgradeable": "^4.1.0",
     "@truffle/hdwallet-provider": "^1.2.1",
     "dotenv": "^5.0.1",
-    "fs": "0.0.1-security",
+    "fs": "0.0.2",
     "ganache-cli": "^6.1.2",
     "truffle": "^5.1.62"
   },
