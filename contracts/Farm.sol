@@ -270,9 +270,22 @@ contract Farm is Ownable {
             _erc20.transfer(_to, amount);
     }
 
-    //Change the rewardPerBlock
-    function changeRewardPerBlock(uint256 _rewardPerBlock) external onlyOwner {
-       rewardPerBlock = _rewardPerBlock;
+    // Change the rewardPerBlock
+    function changeRewardPerBlock(uint256 _rewardPerBlock,bool _withUpdate) external onlyOwner {
+        require(block.number < endBlock, "changeRewardPerBlock: Too late farming ended");
+        uint256 leftRewards = rewardPerBlock.mul(endBlock - startBlock) - (block.number > startBlock ? rewardPerBlock.mul( block.number-startBlock) : 0);
+        uint256 newLeftBlocks = leftRewards.div(_rewardPerBlock);
+        uint256 newEndBlock = block.number > startBlock ? block.number : startBlock + newLeftBlocks;
+
+        if(_rewardPerBlock > rewardPerBlock)
+            // 21600 blocks should be roughly 24 hours on matic
+            require(newEndBlock > block.number + 21600,"Please fund the contract before increasing the rewards per block" );
+        
+        if (_withUpdate)
+            massUpdatePools();
+
+        endBlock = newEndBlock;
+        rewardPerBlock = _rewardPerBlock;
     }
 
 
