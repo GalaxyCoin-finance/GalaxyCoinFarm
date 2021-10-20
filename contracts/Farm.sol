@@ -46,7 +46,7 @@ contract Farm is Ownable {
         uint256 accERC20PerShare;   // Accumulated ERC20s per share, times 1e36.
         uint256 withdrawFee;        // Fee of amount which will go to admin's wallet when people unstake
         uint256 claimFee;           // Fee of amount which will go to admin's wallet when people claim
-
+        uint256 stakedAmount;       // Amount of @lpToken staked in this pool
     }
 
     // Address of the ERC20 Token contract.
@@ -97,7 +97,6 @@ contract Farm is Ownable {
     }
 
     // Add a new lp to the pool. Can only be called by the owner.
-    // DO NOT add the same LP token more than once. Rewards will be messed up if you do.
     function add(uint256 _allocPoint, IERC20 _lpToken, uint256 _withdrawFee, uint256 _claimFee, bool _withUpdate ) external onlyOwner {
         if (_withUpdate) {
             massUpdatePools();
@@ -110,7 +109,8 @@ contract Farm is Ownable {
             lastRewardBlock: lastRewardBlock,
             accERC20PerShare: 0,
             withdrawFee: _withdrawFee, 
-            claimFee: _claimFee
+            claimFee: _claimFee,
+            stakedAmount: 0
         }));
     }
 
@@ -134,7 +134,7 @@ contract Farm is Ownable {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         uint256 accERC20PerShare = pool.accERC20PerShare;
-        uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+        uint256 lpSupply = pool.stakedAmount;
 
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
             uint256 lastBlock = block.number < endBlock ? block.number : endBlock;
@@ -172,7 +172,7 @@ contract Farm is Ownable {
         if (lastBlock <= pool.lastRewardBlock) {
             return;
         }
-        uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+        uint256 lpSupply = pool.stakedAmount;
         if (lpSupply == 0) {
             pool.lastRewardBlock = lastBlock;
             return;
@@ -198,6 +198,7 @@ contract Farm is Ownable {
             erc20Transfer(msg.sender, pendingAmount-adminWalletAmount);
         }
         pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+        pool.stakedAmount += _amount;
         user.amount = user.amount.add(_amount);
         user.rewardDebt = user.amount.mul(pool.accERC20PerShare).div(1e36);
         emit Deposit(msg.sender, _pid, _amount);
@@ -217,6 +218,7 @@ contract Farm is Ownable {
         if(adminWalletAmount > 0)
             pool.lpToken.safeTransfer(adminWallet, adminWalletAmount);
         pool.lpToken.safeTransfer(address(msg.sender), _amount - adminWalletAmount);
+        pool.stakedAmount -= _amount;
         emit Withdraw(msg.sender, _pid, _amount);
     }
 
@@ -226,6 +228,7 @@ contract Farm is Ownable {
         UserInfo storage user = userInfo[_pid][msg.sender];
         pool.lpToken.safeTransfer(address(msg.sender), user.amount);
         emit EmergencyWithdraw(msg.sender, _pid, user.amount);
+        pool.stakedAmount -= user.amount;
         user.amount = 0;
         user.rewardDebt = 0;
     }
