@@ -197,11 +197,13 @@ contract Farm is Ownable {
                 erc20Transfer(adminWallet, adminWalletAmount);
             erc20Transfer(msg.sender, pendingAmount-adminWalletAmount);
         }
+        uint256 balanceBefore = pool.lpToken.balanceOf(address(this));
         pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
-        pool.stakedAmount += _amount;
-        user.amount = user.amount.add(_amount);
+        uint256 netDeposit = pool.lpToken.balanceOf(address(this)).sub(balanceBefore);
+        pool.stakedAmount += netDeposit;
+        user.amount = user.amount.add(netDeposit);
         user.rewardDebt = user.amount.mul(pool.accERC20PerShare).div(1e36);
-        emit Deposit(msg.sender, _pid, _amount);
+        emit Deposit(msg.sender, _pid, netDeposit);
     }
 
     // Withdraw LP tokens from Farm.
