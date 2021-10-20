@@ -239,11 +239,35 @@ contract Farm is Ownable {
         paidOut += _amount;
     }
 
-    // Withdraw ERC20 tokens after end block
+    /* 
+        recover any ERC20 tokens sent by mistake or recover rewards 
+        after all farms have ended and all users have unstaked
+        technically can be called while farming is still active
+        owner can in no way take users staked token or rewards
+    */
     function erc20Withdraw(IERC20 _erc20, address _to) onlyOwner external {
-        require(block.timestamp >= endBlock + 14 days, "Farming is not ended yet.");
-        uint256 amount = _erc20.balanceOf(address(this));
-        _erc20.transfer(_to, amount);
+        // check if this _erc20 has pools and users are still staked in those pools
+        uint256 userStakeLeft;
+        for(uint256 i = 0 ; i < poolInfo.length; i++){
+            if(poolInfo[i].lpToken == _erc20)
+                userStakeLeft += poolInfo[i].stakedAmount;
+        }
+
+        // since we can not track all users pending rewards 
+        // the owner can only withdraw erc20 if all users have
+        // withdrawn and claimed their rewards
+        if(_erc20 == erc20) {
+            require(block.number > endBlock, "Farming is not ended yet.");
+            uint256 allStaked;
+            for(uint256 i = 0 ; i < poolInfo.length; i++)
+                allStaked += poolInfo[i].stakedAmount;
+            require(allStaked == 0,"erc20Withdraw: can't widraw erc20 while there are stakers left");
+        }
+
+        // only transfer the amount not belonging to users
+        uint256 amount = _erc20.balanceOf(address(this)) - userStakeLeft;
+        if(amount > 0)
+            _erc20.transfer(_to, amount);
     }
 
     //Change the rewardPerBlock
