@@ -63,5 +63,10 @@ typings/
 # dotenv environment variables file
 .env
 
+# project specific
+/contracts/artifacts
+.idea
+artifacts/
+secrets.json
 
 # End of https://www.gitignore.io/api/node
