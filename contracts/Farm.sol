@@ -46,7 +46,7 @@ contract Farm is Ownable {
         uint256 accERC20PerShare;   // Accumulated ERC20s per share, times 1e36.
         uint256 withdrawFee;        // Fee of amount which will go to admin's wallet when people unstake
         uint256 claimFee;           // Fee of amount which will go to admin's wallet when people claim
-
+        uint256 stakedAmount;       // Amount of @lpToken staked in this pool
     }
 
     // Address of the ERC20 Token contract.
@@ -97,7 +97,6 @@ contract Farm is Ownable {
     }
 
     // Add a new lp to the pool. Can only be called by the owner.
-    // DO NOT add the same LP token more than once. Rewards will be messed up if you do.
     function add(uint256 _allocPoint, IERC20 _lpToken, uint256 _withdrawFee, uint256 _claimFee, bool _withUpdate ) external onlyOwner {
         if (_withUpdate) {
             massUpdatePools();
@@ -110,7 +109,8 @@ contract Farm is Ownable {
             lastRewardBlock: lastRewardBlock,
             accERC20PerShare: 0,
             withdrawFee: _withdrawFee, 
-            claimFee: _claimFee
+            claimFee: _claimFee,
+            stakedAmount: 0
         }));
     }
 
@@ -134,7 +134,7 @@ contract Farm is Ownable {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         uint256 accERC20PerShare = pool.accERC20PerShare;
-        uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+        uint256 lpSupply = pool.stakedAmount;
 
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
             uint256 lastBlock = block.number < endBlock ? block.number : endBlock;
@@ -172,7 +172,7 @@ contract Farm is Ownable {
         if (lastBlock <= pool.lastRewardBlock) {
             return;
         }
-        uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+        uint256 lpSupply = pool.stakedAmount;
         if (lpSupply == 0) {
             pool.lastRewardBlock = lastBlock;
             return;
@@ -197,10 +197,13 @@ contract Farm is Ownable {
                 erc20Transfer(adminWallet, adminWalletAmount);
             erc20Transfer(msg.sender, pendingAmount-adminWalletAmount);
         }
+        uint256 balanceBefore = pool.lpToken.balanceOf(address(this));
         pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
-        user.amount = user.amount.add(_amount);
+        uint256 netDeposit = pool.lpToken.balanceOf(address(this)).sub(balanceBefore);
+        pool.stakedAmount += netDeposit;
+        user.amount = user.amount.add(netDeposit);
         user.rewardDebt = user.amount.mul(pool.accERC20PerShare).div(1e36);
-        emit Deposit(msg.sender, _pid, _amount);
+        emit Deposit(msg.sender, _pid, netDeposit);
     }
 
     // Withdraw LP tokens from Farm.
@@ -217,6 +220,7 @@ contract Farm is Ownable {
         if(adminWalletAmount > 0)
             pool.lpToken.safeTransfer(adminWallet, adminWalletAmount);
         pool.lpToken.safeTransfer(address(msg.sender), _amount - adminWalletAmount);
+        pool.stakedAmount -= _amount;
         emit Withdraw(msg.sender, _pid, _amount);
     }
 
@@ -226,6 +230,7 @@ contract Farm is Ownable {
         UserInfo storage user = userInfo[_pid][msg.sender];
         pool.lpToken.safeTransfer(address(msg.sender), user.amount);
         emit EmergencyWithdraw(msg.sender, _pid, user.amount);
+        pool.stakedAmount -= user.amount;
         user.amount = 0;
         user.rewardDebt = 0;
     }
@@ -236,16 +241,53 @@ contract Farm is Ownable {
         paidOut += _amount;
     }
 
-    // Withdraw ERC20 tokens after end block
+    /* 
+        recover any ERC20 tokens sent by mistake or recover rewards 
+        after all farms have ended and all users have unstaked
+        technically can be called while farming is still active
+        owner can in no way take users staked token or rewards
+    */
     function erc20Withdraw(IERC20 _erc20, address _to) onlyOwner external {
-        require(block.timestamp >= endBlock + 14 days, "Farming is not ended yet.");
-        uint256 amount = _erc20.balanceOf(address(this));
-        _erc20.transfer(_to, amount);
+        // check if this _erc20 has pools and users are still staked in those pools
+        uint256 userStakeLeft;
+        for(uint256 i = 0 ; i < poolInfo.length; i++){
+            if(poolInfo[i].lpToken == _erc20)
+                userStakeLeft += poolInfo[i].stakedAmount;
+        }
+
+        // since we can not track all users pending rewards 
+        // the owner can only withdraw erc20 if all users have
+        // withdrawn and claimed their rewards
+        if(_erc20 == erc20) {
+            require(block.number > endBlock, "Farming is not ended yet.");
+            uint256 allStaked;
+            for(uint256 i = 0 ; i < poolInfo.length; i++)
+                allStaked += poolInfo[i].stakedAmount;
+            require(allStaked == 0,"erc20Withdraw: can't widraw erc20 while there are stakers left");
+        }
+
+        // only transfer the amount not belonging to users
+        uint256 amount = _erc20.balanceOf(address(this)) - userStakeLeft;
+        if(amount > 0)
+            _erc20.transfer(_to, amount);
     }
 
-    //Change the rewardPerBlock
-    function changeRewardPerBlock(uint256 _rewardPerBlock) external onlyOwner {
-       rewardPerBlock = _rewardPerBlock;
+    // Change the rewardPerBlock
+    function changeRewardPerBlock(uint256 _rewardPerBlock,bool _withUpdate) external onlyOwner {
+        require(block.number < endBlock, "changeRewardPerBlock: Too late farming ended");
+        uint256 leftRewards = rewardPerBlock.mul(endBlock - startBlock) - (block.number > startBlock ? rewardPerBlock.mul( block.number-startBlock) : 0);
+        uint256 newLeftBlocks = leftRewards.div(_rewardPerBlock);
+        uint256 newEndBlock = block.number > startBlock ? block.number : startBlock + newLeftBlocks;
+
+        if(_rewardPerBlock > rewardPerBlock)
+            // 21600 blocks should be roughly 24 hours on matic
+            require(newEndBlock > block.number + 21600,"Please fund the contract before increasing the rewards per block" );
+        
+        if (_withUpdate)
+            massUpdatePools();
+
+        endBlock = newEndBlock;
+        rewardPerBlock = _rewardPerBlock;
     }
 
 
