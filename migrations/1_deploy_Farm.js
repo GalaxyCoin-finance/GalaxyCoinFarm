@@ -14,7 +14,7 @@ module.exports = function (deployer, network, addresses) {
             0,
             zero
         ); // can be initialized later
-    } else if (network != 'developement' && network != 'polygon' && network != 'bsc' && network != 'main') {
+    } else if (network != 'development' && network != 'polygon' && network != 'bsc' && network != 'main') {
         deployer.deploy(
             ERC20,
             "GAX Mock Token",
@@ -43,7 +43,7 @@ module.exports = function (deployer, network, addresses) {
         ); // can be initialized later
 
     } else {
-        // developement deployement
+        // development deployment
         const config = allConfigs[network.replace(/-fork$/, '')] || allConfigs.default;
         if (!config) {
             return;
