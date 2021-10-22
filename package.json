@@ -26,6 +26,8 @@
     "truffle": "^5.1.62"
   },
   "devDependencies": {
-    "truffle-plugin-verify": "^0.5.4"
+    "truffle-plugin-verify": "^0.5.4",
+    "web3-provider-engine": "^16.0.3",
+    "truffle-assertions": "^0.9.2"
   }
 }

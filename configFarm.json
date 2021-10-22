@@ -1,0 +1,21 @@
+{
+  "default": {
+    "erc20": {
+      "name": "GAX Mock Token",
+      "symbol": "GAX",
+      "decimals": 18,
+      "supply": "100000000000"
+    },
+    "rewardPerBlock": "10000000",
+    "delay": 30,
+    "fund": "50000000000",
+    "lp": [
+      {
+        "name": "Mock LP Token",
+        "symbol": "LPM",
+        "decimals": 18,
+        "allocPoint": 120
+      }
+    ]
+  }
+}
