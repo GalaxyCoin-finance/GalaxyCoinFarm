@@ -147,15 +147,15 @@ contract Farm is Ownable {
         massUpdatePools();
 
         uint256 lastRewardBlock = block.number > startBlock ? block.number : startBlock;
-        totalAllocPoint = totalAllocPoint.add(_allocPoint);
-        poolInfo.push(PoolInfo({
-        lpToken : _lpToken,
-        allocPoint : _allocPoint,
-        lastRewardBlock : lastRewardBlock,
-        accERC20PerShare : 0,
-        withdrawFee : _withdrawFee,
-        claimFee : _claimFee,
-        stakedAmount : 0
+            totalAllocPoint = totalAllocPoint.add(_allocPoint);
+            poolInfo.push(PoolInfo({
+            lpToken : _lpToken,
+            allocPoint : _allocPoint,
+            lastRewardBlock : lastRewardBlock,
+            accERC20PerShare : 0,
+            withdrawFee : _withdrawFee,
+            claimFee : _claimFee,
+            stakedAmount : 0
         }));
     }
 
@@ -361,6 +361,4 @@ contract Farm is Ownable {
             totalERC20Rewards -= leftoverRewards;
         }
     }
-
-
 }
