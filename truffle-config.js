@@ -32,8 +32,8 @@ module.exports = {
                 return wallet
             },
             network_id: 80001,
-            confirmations: 2,
-            //websockets: true
+            confirmations: 0,
+            skipDryRun: true,
         },
         kovan: {
             provider: function () {

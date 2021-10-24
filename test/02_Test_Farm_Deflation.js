@@ -3,7 +3,7 @@ const ERC20 = artifacts.require('./test/ERC20Mock.sol');
 const LP = artifacts.require('./test/DeflationERC20Mock.sol');
 const {waitUntilBlock} = require('./helpers/tempo')(web3);
 const truffleAssert = require('truffle-assertions');
-const afterTax = 0.99; 
+const afterTax = 0.99;
 contract('Farm with Deflation tokens', ([owner, alice, bob, carl]) => {
     before(async () => {
         this.erc20 = await ERC20.new("Mock token", "MOCK", 1000000);
@@ -16,8 +16,8 @@ contract('Farm with Deflation tokens', ([owner, alice, bob, carl]) => {
         const currentBlock = await web3.eth.getBlockNumber();
         this.startBlock = currentBlock + 100;
 
-        this.farm = await Farm.new(this.erc20.address, 100, this.startBlock , owner);
-        this.farm.add(15, this.lp.address, 0, 0, false);
+        this.farm = await Farm.new(this.erc20.address, 100, this.startBlock, owner);
+        this.farm.add(15, this.lp.address, 0, 0);
 
         await this.erc20.approve(this.farm.address, 10000);
         await this.farm.fund(10000);
@@ -112,20 +112,20 @@ contract('Farm with Deflation tokens', ([owner, alice, bob, carl]) => {
 
         it('allows participants to join', async () => {
             const balanceFarm = await this.lp.balanceOf(this.farm.address);
-            assert.equal(2000*afterTax, balanceFarm);
-            
+            assert.equal(2000 * afterTax, balanceFarm);
+
             const amountStaked = (await this.farm.poolInfo(0)).stakedAmount;
-            assert.equal(2000*afterTax, amountStaked);
+            assert.equal(2000 * afterTax, amountStaked);
 
             const balanceAlice = await this.lp.balanceOf(alice);
             const depositAlice = await this.farm.deposited(0, alice);
             assert.equal(3500, balanceAlice);
-            assert.equal(1500*afterTax, depositAlice);
+            assert.equal(1500 * afterTax, depositAlice);
 
             const balanceBob = await this.lp.balanceOf(bob);
             const depositBob = await this.farm.deposited(0, bob);
             assert.equal(0, balanceBob);
-            assert.equal(500*afterTax, depositBob);
+            assert.equal(500 * afterTax, depositBob);
         });
 
         it('does not assign any rewards yet', async () => {
@@ -203,7 +203,7 @@ contract('Farm with Deflation tokens', ([owner, alice, bob, carl]) => {
     describe('with a participant withdrawing after 70 blocks', () => {
         before(async () => {
             await waitUntilBlock(10, this.startBlock + 69);
-            await this.farm.withdraw(0, 1500*afterTax, {from: alice});
+            await this.farm.withdraw(0, 1500 * afterTax, {from: alice});
         });
 
         it('gives alice 3749 MOCK and 1500 LP', async () => {
@@ -306,7 +306,7 @@ contract('Farm with Deflation tokens', ([owner, alice, bob, carl]) => {
     describe('with an added lp token (for 25%) after 100 blocks', () => {
         before(async () => {
             await waitUntilBlock(10, this.startBlock + 99);
-            this.farm.add(5, this.lp2.address, 0, 0, true);
+            this.farm.add(5, this.lp2.address, 0, 0);
         });
 
         it('has a total reward of 3451 MOCK pending', async () => {
@@ -415,7 +415,7 @@ contract('Farm with Deflation tokens', ([owner, alice, bob, carl]) => {
             assert.equal(1485, balanceFarm);
 
             const depositAlice = await this.farm.deposited(1, alice);
-            assert.equal(1000*afterTax, depositAlice);
+            assert.equal(1000 * afterTax, depositAlice);
 
             const depositBob = await this.farm.deposited(1, bob);
             assert.equal(0, depositBob);
@@ -658,9 +658,9 @@ contract('Farm with Deflation tokens', ([owner, alice, bob, carl]) => {
 
     describe('with participants withdrawing after closed', async () => {
         before(async () => {
-            await this.farm.withdraw(1, await this.farm.deposited(1 , alice), {from: alice});
-            await this.farm.withdraw(0, await this.farm.deposited(0 , bob), {from: bob});
-            await this.farm.withdraw(0, await this.farm.deposited(0 , carl), {from: carl});
+            await this.farm.withdraw(1, await this.farm.deposited(1, alice), {from: alice});
+            await this.farm.withdraw(0, await this.farm.deposited(0, bob), {from: bob});
+            await this.farm.withdraw(0, await this.farm.deposited(0, carl), {from: carl});
         });
 
         it('gives alice 1250 MOCK and 981 LP2', async () => {
