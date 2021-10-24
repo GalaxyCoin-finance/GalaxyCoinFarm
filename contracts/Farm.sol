@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -148,15 +147,15 @@ contract Farm is Ownable {
         massUpdatePools();
 
         uint256 lastRewardBlock = block.number > startBlock ? block.number : startBlock;
-        totalAllocPoint = totalAllocPoint.add(_allocPoint);
-        poolInfo.push(PoolInfo({
-        lpToken : _lpToken,
-        allocPoint : _allocPoint,
-        lastRewardBlock : lastRewardBlock,
-        accERC20PerShare : 0,
-        withdrawFee : _withdrawFee,
-        claimFee : _claimFee,
-        stakedAmount : 0
+            totalAllocPoint = totalAllocPoint.add(_allocPoint);
+            poolInfo.push(PoolInfo({
+            lpToken : _lpToken,
+            allocPoint : _allocPoint,
+            lastRewardBlock : lastRewardBlock,
+            accERC20PerShare : 0,
+            withdrawFee : _withdrawFee,
+            claimFee : _claimFee,
+            stakedAmount : 0
         }));
     }
 
@@ -362,6 +361,4 @@ contract Farm is Ownable {
             totalERC20Rewards -= leftoverRewards;
         }
     }
-
-
 }

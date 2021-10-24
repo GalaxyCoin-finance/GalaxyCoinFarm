@@ -234,6 +234,7 @@ contract GalaxyLottery is ReentrancyGuard, Ownable {
     
     /**
      * helper function to generate random number
+     ** Need to update with VRF here
      */
     function _randModulus(uint256 _mod) internal returns(uint256) {
         uint256 rand = uint256(keccak256(abi.encodePacked(nonce, oracle, block.timestamp, block.difficulty, 
