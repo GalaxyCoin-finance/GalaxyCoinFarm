@@ -14,7 +14,7 @@ module.exports = function (deployer, network, addresses) {
             0,
             zero
         ); // can be initialized later
-    } else if (network != 'development' && network != 'polygon' && network != 'bsc' && network != 'main') {
+    } else if (network !== 'development' && network !== 'polygon' && network !== 'bsc' && network !== 'main') {
         deployer.deploy(
             ERC20,
             "GAX Mock Token",
@@ -41,7 +41,6 @@ module.exports = function (deployer, network, addresses) {
             0,
             zero
         ); // can be initialized later
-
     } else {
         // development deployment
         const config = allConfigs[network.replace(/-fork$/, '')] || allConfigs.default;
@@ -131,14 +130,13 @@ module.exports = function (deployer, network, addresses) {
                 .then(() => {
                     return Farm.deployed();
                 })
-                //uint256 _allocPoint, IERC20 _lpToken, uint256 _withdrawFee, uint256 _claimFee, bool _withUpdate 
+                //uint256 _allocPoint, IERC20 _lpToken, uint256 _withdrawFee, uint256 _claimFee 
                 .then((farmInstance) => {
                     return farmInstance.add(
                         token.allocPoint,
                         token.address || LP.address,
                         0,
-                        0,
-                        false
+                        0
                     );
                 });
         });

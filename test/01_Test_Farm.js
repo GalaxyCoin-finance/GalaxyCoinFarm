@@ -17,7 +17,7 @@ contract('Farm', ([owner, alice, bob, carl]) => {
         this.startBlock = currentBlock + 100;
 
         this.farm = await Farm.new(this.erc20.address, 100, this.startBlock, owner);
-        this.farm.add(15, this.lp.address, 0, 0, false);
+        this.farm.add(15, this.lp.address, 0, 0);
 
         await this.erc20.approve(this.farm.address, 10000);
         await this.farm.fund(10000);
@@ -303,12 +303,12 @@ contract('Farm', ([owner, alice, bob, carl]) => {
     describe('with an added lp token (for 25%) after 100 blocks', () => {
         before(async () => {
             await waitUntilBlock(10, this.startBlock + 99);
-            this.farm.add(5, this.lp2.address, 0, 0, true);
+            this.farm.add(5, this.lp2.address, 0, 0);
         });
 
-        it('has a total reward of 3450 MOCK pending', async () => {
+        it('has a total reward of 3350 MOCK pending', async () => {
             const totalPending = await this.farm.totalPending();
-            assert.equal(3450, totalPending);
+            assert.equal(3350, totalPending);
         });
 
         it('is initialized for the LP token 2', async () => {
