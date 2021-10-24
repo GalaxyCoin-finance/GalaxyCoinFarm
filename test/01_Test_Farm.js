@@ -303,9 +303,11 @@ contract("Farm", ([owner, alice, bob, carl]) => {
       this.farm.add(5, this.lp2.address, 0, 0);
     });
 
-    it("has a total reward of 3350 MOCK pending", async () => {
+    it("has a total reward of 3450 MOCK pending", async () => {
+      const currentBlock = await web3.eth.getBlockNumber();
+      assert.equal(currentBlock - (await this.farm.startBlock()), 99);
       const totalPending = await this.farm.totalPending();
-      assert.equal(3350, totalPending.toNumber());
+      assert.equal(3450, totalPending.toNumber());
     });
 
     it("is initialized for the LP token 2", async () => {
