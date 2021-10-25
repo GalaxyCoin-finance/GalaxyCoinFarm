@@ -541,8 +541,21 @@ contract("Farm", ([owner, alice, bob, carl]) => {
 
   describe("with a participant doing an emergency withdraw LP2 after 160 blocks", () => {
     before(async () => {
-      await waitUntilBlock(10, this.startBlock + 159);
+      await waitUntilBlock(10, this.startBlock + 156);
+    });
+
+    it('Fails to emergency withdraw when not paused', async () => {
+        await truffleAssert.reverts(
+          this.farm.emergencyWithdraw(1, { from: carl }),
+          "Pausable: not paused"
+        );
+    });
+
+    it('It does not fail to emergency withdraw when paused', async() => {
+      await this.farm.pause();
+
       await this.farm.emergencyWithdraw(1, { from: carl });
+      await this.farm.unPause();
     });
 
     it("gives carl 500 LP", async () => {

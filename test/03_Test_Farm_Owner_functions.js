@@ -137,15 +137,7 @@ contract('Farm Special Functions', ([owner, alice, bob, carl, adminWallet, admin
 
     describe('before the start block', () => {
         before(async () => {
-            await Promise.all([
-                this.lp.approve(this.farm.address, toWei('1500'), {from: alice}),
-                this.lp.approve(this.farm.address, toWei('500'), {from: bob})
-            ]);
 
-            await Promise.all([
-                this.farm.deposit(0, toWei('1500'), {from: alice}),
-                this.farm.deposit(0, toWei('500'), {from: bob})
-            ]);
         });
 
         it('Reducing rewards per block push the end block to the future and avoids division precision loss', async () => {
@@ -180,7 +172,46 @@ contract('Farm Special Functions', ([owner, alice, bob, carl, adminWallet, admin
             assert.equal(balance, toWei('5000000'));
         })
 
+        it('can Pause only by owner', async () => {
+            await truffleAssert.reverts(
+                this.farm.pause({from: alice}),
+                "Ownable: caller is not the owner"
+            );
+
+            await this.farm.pause();
+            assert.equal(true, await this.farm.paused());
+        });
+
+        it('Does not allow deposits when paused', async() => {
+            this.lp.approve(this.farm.address, toWei('1500'), {from: alice});
+
+            await truffleAssert.reverts(
+                this.farm.deposit(0, toWei('1500'), {from: alice}),
+                "Pausable: paused"
+            );
+        });
+        
+        it('can only unpause only by owner', async() => {
+            await truffleAssert.reverts(
+                this.farm.unPause({from: alice}),
+                "Ownable: caller is not the owner"
+            );
+
+            await this.farm.unPause();
+            assert.equal(false, await this.farm.paused());
+        });
+
         it('Allows participants to join', async () => {
+            await Promise.all([
+                this.lp.approve(this.farm.address, toWei('1500'), {from: alice}),
+                this.lp.approve(this.farm.address, toWei('500'), {from: bob})
+            ]);
+
+            await Promise.all([
+                this.farm.deposit(0, toWei('1500'), {from: alice}),
+                this.farm.deposit(0, toWei('500'), {from: bob})
+            ]);
+
             const balanceFarm = await this.lp.balanceOf(this.farm.address);
             assert.equal(toWei('2000'), balanceFarm);
 

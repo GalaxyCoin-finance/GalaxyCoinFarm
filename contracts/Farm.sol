@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 // Farm distributes the ERC20 rewards based on staked LP to each user.
 //
@@ -14,7 +15,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // Last Edited by GalaxyCoin.finance team adding lots of features to meet their use case
 
 
-contract Farm is Ownable {
+contract Farm is Ownable, Pausable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -124,6 +125,21 @@ contract Farm is Ownable {
         endBlock != 0 && _startBlock != 0;
     }
 
+    /**
+        Pauses the contract stoping deposits and widrawals 
+     */
+    function pause() external onlyOwner{
+        _pause();
+    }
+
+
+    /**
+        unpause the contracts
+     */
+    function unPause() external onlyOwner{
+        _unpause();
+    }
+
 
     // change adminWallet (the one that receives the fees)
     function changeAdminWallet(address _newAdminWallet) external onlyOwner {
@@ -228,7 +244,7 @@ contract Farm is Ownable {
     }
 
     // Deposit LP tokens to Farm for ERC20 allocation.
-    function deposit(uint256 _pid, uint256 _amount) external onlyAfterInit {
+    function deposit(uint256 _pid, uint256 _amount) external onlyAfterInit whenNotPaused{
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         updatePool(_pid);
@@ -249,7 +265,7 @@ contract Farm is Ownable {
     }
 
     // Withdraw LP tokens from Farm.
-    function withdraw(uint256 _pid, uint256 _amount) external {
+    function withdraw(uint256 _pid, uint256 _amount) external whenNotPaused {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
 
@@ -274,7 +290,7 @@ contract Farm is Ownable {
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw(uint256 _pid) external {
+    function emergencyWithdraw(uint256 _pid) external whenPaused {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         pool.lpToken.safeTransfer(address(msg.sender), user.amount);
