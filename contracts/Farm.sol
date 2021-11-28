@@ -240,7 +240,7 @@ contract Farm is Ownable, Pausable {
         uint256 erc20Reward = nrOfBlocks.mul(rewardPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
 
         pool.accERC20PerShare = pool.accERC20PerShare.add(erc20Reward.mul(1e36).div(lpSupply));
-        pool.lastRewardBlock = block.number;
+        pool.lastRewardBlock = lastBlock; 
     }
 
     // Deposit LP tokens to Farm for ERC20 allocation.
