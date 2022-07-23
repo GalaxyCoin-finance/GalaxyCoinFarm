@@ -17,8 +17,8 @@
   "author": "admin@payrlink.com",
   "license": "MIT",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.0.0",
-    "@openzeppelin/contracts-upgradeable": "^4.1.0",
+    "@openzeppelin/contracts": "^4.7.1",
+    "@openzeppelin/contracts-upgradeable": "^4.7.1",
     "@truffle/hdwallet-provider": "^1.2.1",
     "dotenv": "^5.0.1",
     "fs": "0.0.1-security",
